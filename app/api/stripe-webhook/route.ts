@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { activateVipFromStripe, deactivateVipFromStripe, setStripeCustomerId } from '@/lib/user';
+import { activateVipFromStripe, deactivateVipFromStripe, findUserByStripeCustomerId, setStripeCustomerId } from '@/lib/user';
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -33,11 +33,19 @@ export async function POST(req: NextRequest) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
-        const userId = session.metadata?.userId;
         const subscriptionId = typeof session.subscription === 'string' ? session.subscription : undefined;
         const customerId = session.customer as string;
+        let userId = session.metadata?.userId;
+
+        if (!userId && customerId) {
+          const user = await findUserByStripeCustomerId(customerId);
+          if (user) userId = user.id;
+        }
+
         if (userId) {
-          await setStripeCustomerId(userId, customerId);
+          if (customerId) {
+            await setStripeCustomerId(userId, customerId);
+          }
           await activateVipFromStripe(userId, subscriptionId);
         }
         break;
@@ -45,15 +53,32 @@ export async function POST(req: NextRequest) {
       case 'customer.subscription.created':
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
-        const userId = subscription.metadata?.userId;
+        let userId = subscription.metadata?.userId;
+        const customerId = subscription.customer as string;
+
+        if (!userId && customerId) {
+          const user = await findUserByStripeCustomerId(customerId);
+          if (user) userId = user.id;
+        }
+
         if (userId) {
           await activateVipFromStripe(userId, subscription.id);
+          if (customerId) {
+            await setStripeCustomerId(userId, customerId);
+          }
         }
         break;
       }
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription;
-        const userId = subscription.metadata?.userId;
+        let userId = subscription.metadata?.userId;
+        const customerId = subscription.customer as string;
+
+        if (!userId && customerId) {
+          const user = await findUserByStripeCustomerId(customerId);
+          if (user) userId = user.id;
+        }
+
         if (userId) {
           await deactivateVipFromStripe(userId);
         }

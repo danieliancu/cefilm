@@ -39,6 +39,11 @@ export async function findUserById(id: string) {
   return rows[0] || null;
 }
 
+export async function findUserByStripeCustomerId(customerId: string) {
+  const rows = await query<DbUserRow>('SELECT * FROM users WHERE stripe_customer_id = ? LIMIT 1', [customerId]);
+  return rows[0] || null;
+}
+
 export async function setStripeCustomerId(userId: string, customerId: string) {
   await query('UPDATE users SET stripe_customer_id = ?, updated_at = NOW() WHERE id = ?', [customerId, userId]);
 }
