@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getTokenFromRequest, verifyToken } from '@/lib/auth';
 import { findUserById, toPublicUser } from '@/lib/user';
+import { syncVipStatusFromStripe } from '@/lib/stripeSync';
 import { query } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
@@ -14,10 +15,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Token expirat' }, { status: 401 });
   }
 
-  const user = await findUserById(payload.userId);
+  let user = await findUserById(payload.userId);
 
   if (!user) {
     return NextResponse.json({ error: 'Utilizator inexistent' }, { status: 404 });
+  }
+
+  // Fallback sync in case the Stripe webhook missed an update
+  if (user?.stripe_customer_id) {
+    user = await syncVipStatusFromStripe(user);
   }
 
   const watchlistRows = await query<any>('SELECT * FROM watchlist_items WHERE user_id = ? ORDER BY created_at DESC', [user.id]);
