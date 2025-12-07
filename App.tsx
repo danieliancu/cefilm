@@ -415,11 +415,40 @@ const App: React.FC<AppProps> = ({ initialState = 'landing' }) => {
     ? 'text-red-500'
     : 'text-amber-500';
 
+  const startCheckout = async () => {
+    if (!user) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lang: language }),
+      });
+      if (res.status === 401) {
+        setIsAuthModalOpen(true);
+        return;
+      }
+      if (!res.ok) {
+        setError(getTranslation('error_message', language));
+        return;
+      }
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url as string;
+      }
+    } catch {
+      setError(getTranslation('error_message', language));
+    }
+  };
+
   const handleUpgrade = () => {
-    if (user) {
+    if (user?.isVip) {
       router.push('/dashboard');
     } else {
-      setIsAuthModalOpen(true);
+      startCheckout();
     }
   };
 
@@ -650,11 +679,7 @@ const App: React.FC<AppProps> = ({ initialState = 'landing' }) => {
                       fullWidth
                       onClick={() => {
                         setShowSubscriptionModal(false);
-                        if (user) {
-                          router.push('/dashboard');
-                        } else {
-                          setIsAuthModalOpen(true);
-                        }
+                        handleUpgrade();
                       }}
                     >
                       {getTranslation('sub_btn_upgrade', language)}
@@ -811,6 +836,8 @@ const App: React.FC<AppProps> = ({ initialState = 'landing' }) => {
                 onBack={() => transitionTo('landing')} 
                 onStart={() => startNewAnalysis()} 
                 lang={language}
+                onUpgrade={handleUpgrade}
+                isVip={!!user?.isVip}
             />
         )}
 
@@ -920,7 +947,7 @@ const App: React.FC<AppProps> = ({ initialState = 'landing' }) => {
         onNavigate={handleNavigate} 
         lang={language} 
         isVip={!!user?.isVip}
-        onUpgrade={() => user?.isVip ? router.push('/dashboard') : setIsAuthModalOpen(true)}
+        onUpgrade={handleUpgrade}
       />
     </div>
   );

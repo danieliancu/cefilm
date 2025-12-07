@@ -7,16 +7,19 @@ interface PricingSectionProps {
   lang: Language;
   onUpgrade: () => void;
   isVip?: boolean;
+  showTitle?: boolean;
 }
 
-export const PricingSection: React.FC<PricingSectionProps> = ({ lang, onUpgrade, isVip = false }) => {
+export const PricingSection: React.FC<PricingSectionProps> = ({ lang, onUpgrade, isVip = false, showTitle = true }) => {
   return (
     <div className="w-full max-w-7xl mx-auto px-6 py-24 relative z-10">
       
       <div className="text-center mb-16">
-        <h2 className="text-4xl md:text-5xl cinema-font text-white mb-4 gold-text">
-            {getTranslation('pricing_title', lang)}
-        </h2>
+        {showTitle && (
+          <h2 className="text-4xl md:text-5xl cinema-font text-white mb-4 gold-text">
+              {getTranslation('pricing_title', lang)}
+          </h2>
+        )}
         <p className="text-zinc-400 uppercase tracking-widest text-sm">
             {getTranslation('pricing_subtitle', lang)}
         </p>

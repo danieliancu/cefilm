@@ -10,7 +10,7 @@ import { SEARCH_PLATFORMS } from '@/constants';
 
 const DashboardPage: React.FC = () => {
   const router = useRouter();
-  const { user, loading, logout, updateProfile, subscribeVip, refresh, removeWatchlistItem } = useAuth();
+  const { user, loading, logout, updateProfile, refresh, removeWatchlistItem } = useAuth();
 
   const getInitialLang = (): 'ro' | 'en' => {
     if (typeof window === 'undefined') return 'ro';
@@ -146,10 +146,32 @@ const DashboardPage: React.FC = () => {
   };
 
   const handleSubscribe = async () => {
+    setFormError(null);
     setSubscribing(true);
-    await subscribeVip();
-    await refresh();
-    setSubscribing(false);
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lang }),
+      });
+      if (res.status === 401) {
+        router.push(`/?lang=${lang}`);
+        return;
+      }
+      if (!res.ok) {
+        setFormError(lang === 'ro' ? 'Nu am putut porni plata.' : 'Could not start checkout.');
+        return;
+      }
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch {
+      setFormError(lang === 'ro' ? 'Nu am putut porni plata.' : 'Could not start checkout.');
+    } finally {
+      setSubscribing(false);
+    }
   };
 
   const vipPreview = [

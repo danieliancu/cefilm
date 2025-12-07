@@ -3,14 +3,17 @@ import React from 'react';
 import { Button } from './Button';
 import { Language } from '../types';
 import { getTranslation } from '../translations';
+import { PricingSection } from './PricingSection';
 
 interface HowItWorksProps {
   onBack: () => void;
   onStart: () => void;
   lang: Language;
+  onUpgrade: () => void;
+  isVip?: boolean;
 }
 
-export const HowItWorks: React.FC<HowItWorksProps> = ({ onBack, onStart, lang }) => {
+export const HowItWorks: React.FC<HowItWorksProps> = ({ onBack, onStart, lang, onUpgrade, isVip = false }) => {
   const steps = [
     {
       num: "01",
@@ -75,12 +78,19 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({ onBack, onStart, lang })
         ))}
       </div>
 
+
+
+      {/* Pricing block (same specificații ca homepage, fără titlul "Casa de Bilete") */}
+      <PricingSection lang={lang} onUpgrade={onUpgrade} isVip={isVip} showTitle={false} />
+
+
       <div className="bg-zinc-900/80 border-l-4 border-amber-600 p-8 rounded-r-lg max-w-3xl mx-auto mb-16 shadow-2xl">
          <h4 className="text-lg font-bold text-amber-500 mb-2 uppercase tracking-widest">{getTranslation('hiw_note_title', lang)}</h4>
          <p className="text-zinc-300 italic font-serif text-lg">
             {getTranslation('hiw_note_desc', lang)}
          </p>
       </div>
+
 
       <div className="flex flex-col md:flex-row justify-center gap-6">
         <button 
