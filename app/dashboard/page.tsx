@@ -33,6 +33,8 @@ const DashboardPage: React.FC = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     if (typeof document !== 'undefined') {
@@ -85,6 +87,17 @@ const DashboardPage: React.FC = () => {
       whatYouUnlock: { ro: 'Ce deblochezi cu VIP', en: 'What you unlock with VIP' },
       featuresAfterUpgrade: { ro: 'Functii disponibile dupa upgrade', en: 'Features available after upgrade' },
       logout: { ro: 'Deconectare', en: 'Logout' },
+      deleteAccount: { ro: 'Sterge contul', en: 'Delete account' },
+      deleteDesc: {
+        ro: 'Atentie: stergerea contului va elimina toate datele (watchlist, istoric, abonament). Actiune permanenta.',
+        en: 'Warning: deleting your account removes all data (watchlist, history, subscription). This is permanent.'
+      },
+      deleteConfirm: {
+        ro: 'Sigur vrei sa stergi contul? Actiunea este ireversibila.',
+        en: 'Are you sure you want to delete your account? This cannot be undone.'
+      },
+      deleteCancel: { ro: 'Anuleaza', en: 'Cancel' },
+      deleteConfirmAction: { ro: 'Sterge contul', en: 'Delete account' },
       toRecommendations: { ro: 'Inapoi la recomandari', en: 'Back to recommendations' },
       yourTitles: { ro: 'Titlurile tale', en: 'Your titles' },
       historyTitle: { ro: 'Istoric filme gasite', en: 'Found movies history' },
@@ -171,6 +184,22 @@ const DashboardPage: React.FC = () => {
       setFormError(lang === 'ro' ? 'Nu am putut porni plata.' : 'Could not start checkout.');
     } finally {
       setSubscribing(false);
+    }
+  };
+
+  const performDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      const res = await fetch('/api/user/delete', { method: 'DELETE', credentials: 'include' });
+      if (!res.ok) {
+        setFormError(lang === 'ro' ? 'Nu am putut sterge contul.' : 'Could not delete account.');
+        return;
+      }
+      await logout();
+      router.push(`/?lang=${lang}`);
+    } finally {
+      setDeleting(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -436,6 +465,21 @@ const DashboardPage: React.FC = () => {
                 )}
               </div>
             </form>
+
+            {/* Danger zone: delete account */}
+            <div className="mt-6 p-4 border border-red-800 bg-red-900/10 rounded-lg">
+              <p className="text-sm text-red-300 font-semibold mb-2">{t('deleteAccount')}</p>
+              <p className="text-xs text-red-200/80 mb-3">{t('deleteDesc')}</p>
+              <Button
+                type="button"
+                variant="outline"
+                className="border-red-700 text-red-300 hover:text-white hover:border-red-500"
+                onClick={() => setShowDeleteModal(true)}
+                disabled={deleting}
+              >
+                {deleting ? (lang === 'ro' ? 'Se sterge...' : 'Deleting...') : t('deleteAccount')}
+              </Button>
+            </div>
           </div>
 
         <div className="lg:col-span-2 bg-zinc-900/70 border border-zinc-800 rounded-2xl p-6 space-y-4">
@@ -685,6 +729,39 @@ const DashboardPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Delete account modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => !deleting && setShowDeleteModal(false)}></div>
+          <div className="relative w-full max-w-md bg-zinc-900 border border-red-700 rounded-xl shadow-2xl p-6 text-center animate-fade-in-up">
+            <div className="text-4xl mb-3 text-red-400">!</div>
+            <h3 className="text-2xl font-bold text-white mb-2">{t('deleteAccount')}</h3>
+            <p className="text-sm text-red-200 mb-4">{t('deleteConfirm')}</p>
+            <p className="text-xs text-zinc-400 mb-6">{t('deleteDesc')}</p>
+            <div className="flex flex-col gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                className="border-zinc-700 text-zinc-300 hover:text-white"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+              >
+                {t('deleteCancel')}
+              </Button>
+              <Button
+                type="button"
+                className="bg-red-700 hover:bg-red-600 border border-red-800 shadow-[0_0_20px_rgba(220,38,38,0.4)]"
+                onClick={performDeleteAccount}
+                disabled={deleting}
+              >
+                {deleting ? (lang === 'ro' ? 'Se sterge...' : 'Deleting...') : t('deleteConfirmAction')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Footer
         onNavigate={(v) => (v === 'landing' ? router.push(`/?lang=${lang}`) : router.push(`/?lang=${lang}`))}
         lang={lang}
