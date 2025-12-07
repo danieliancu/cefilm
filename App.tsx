@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AppState, QuizCategory, RecommendationResponse, Language, MovieRecommendation } from './types';
 import { getQuizCategories } from './constants';
@@ -16,11 +17,27 @@ import { getMovieRecommendation } from './services/geminiService';
 import { getTranslation } from './translations';
 import { useAuth } from './components/auth/AuthProvider';
 
-const App: React.FC = () => {
+interface AppProps {
+  initialState?: AppState;
+}
+
+const App: React.FC<AppProps> = ({ initialState = 'landing' }) => {
   const router = useRouter();
   const { user, addWatchlistItem, useTicket, refresh } = useAuth();
-  const [appState, setAppState] = useState<AppState>('landing');
-  const [language, setLanguage] = useState<Language>('ro');
+
+  const getInitialLanguage = (): Language => {
+    if (typeof window === 'undefined') return 'ro';
+    const params = new URLSearchParams(window.location.search);
+    const param = params.get('lang');
+    if (param === 'ro' || param === 'en') return param;
+    const stored = window.localStorage.getItem('cefilm_lang');
+    if (stored === 'ro' || stored === 'en') return stored;
+    const nav = navigator.language?.toLowerCase() || '';
+    return nav.startsWith('ro') ? 'ro' : 'en';
+  };
+
+  const [appState, setAppState] = useState<AppState>(initialState);
+  const [language, setLanguage] = useState<Language>(getInitialLanguage);
   const [selectedCategory, setSelectedCategory] = useState<QuizCategory | null>(null);
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [recommendationResult, setRecommendationResult] = useState<RecommendationResponse | null>(null);
@@ -214,7 +231,31 @@ const App: React.FC = () => {
   const changeLanguage = (lang: Language) => {
     setLanguage(lang);
     setIsLangMenuOpen(false);
+
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('cefilm_lang', lang);
+      const url = new URL(window.location.href);
+      url.searchParams.set('lang', lang);
+      window.history.replaceState({}, '', url.toString());
+    }
+
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = lang;
+    }
   };
+
+  // Persist language selection across navigation and update <html lang>
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = language;
+    }
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('cefilm_lang', language);
+      const url = new URL(window.location.href);
+      url.searchParams.set('lang', language);
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [language]);
 
   const goToDashboard = () => {
     if (user) {
@@ -332,6 +373,11 @@ const App: React.FC = () => {
   };
 
   const handleNavigate = (view: 'landing' | 'how-it-works') => {
+      if (view === 'how-it-works') {
+        router.push('/cum-functioneaza');
+      } else {
+        router.push('/');
+      }
       transitionTo(view);
   };
 
@@ -369,6 +415,14 @@ const App: React.FC = () => {
     ? 'text-red-500'
     : 'text-amber-500';
 
+  const handleUpgrade = () => {
+    if (user) {
+      router.push('/dashboard');
+    } else {
+      setIsAuthModalOpen(true);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col relative bg-black text-white overflow-hidden">
       
@@ -387,7 +441,7 @@ const App: React.FC = () => {
       <header className="relative z-50 bg-gradient-to-b from-black/90 to-transparent border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-6 flex justify-between items-center">
             {/* Logo Left */}
-            <div className="flex flex-col cursor-pointer group" onClick={resetApp}>
+            <Link href="/" onClick={resetApp} className="flex flex-col cursor-pointer group">
                 <div className="cinema-font text-xl md:text-3xl font-bold gold-text tracking-widest group-hover:scale-105 transition-transform duration-500">
                 CEFILM?
                 </div>
@@ -395,7 +449,7 @@ const App: React.FC = () => {
                 <div className="hidden md:block text-[10px] text-zinc-500 uppercase tracking-[0.3em] mt-1 group-hover:text-zinc-400 transition-colors">
                     Your Movie Adviser
                 </div>
-            </div>
+            </Link>
             
             {/* Menu Right */}
             <nav className="flex items-center gap-2 md:gap-8">
@@ -411,18 +465,18 @@ const App: React.FC = () => {
                     </span>
                 </div>
 
-                <button 
-                    onClick={() => startNewAnalysis()}
+                <Link 
+                    href="/alege-un-film"
                     className="hidden lg:block text-zinc-400 hover:text-white uppercase text-xs tracking-[0.15em] transition-colors font-bold"
                 >
                     {getTranslation('nav_pick_movie', language)}
-                </button>
-                <button 
-                    onClick={() => transitionTo('how-it-works')}
+                </Link>
+                <Link 
+                    href="/cum-functioneaza"
                     className="hidden lg:block text-zinc-400 hover:text-white uppercase text-xs tracking-[0.15em] transition-colors font-bold"
                 >
                     {getTranslation('nav_how_it_works', language)}
-                </button>
+                </Link>
                 
                 {/* Language Switcher */}
                 <div className="relative">
@@ -592,15 +646,20 @@ const App: React.FC = () => {
                  <h2 className="text-2xl cinema-font text-white mb-2">{getTranslation('sub_title', language)}</h2>
                  <p className="text-zinc-400 mb-8">{getTranslation('sub_desc', language)}</p>
                  <div className="space-y-3">
-                    <Button fullWidth onClick={() => { setShowSubscriptionModal(false); setIsAuthModalOpen(true); }}>
-                        {getTranslation('sub_btn_upgrade', language)}
-                    </Button>
-                    <button 
-                        onClick={handleRefillTickets}
-                        className="text-xs text-zinc-500 hover:text-white uppercase tracking-widest"
+                    <Button
+                      fullWidth
+                      onClick={() => {
+                        setShowSubscriptionModal(false);
+                        if (user) {
+                          router.push('/dashboard');
+                        } else {
+                          setIsAuthModalOpen(true);
+                        }
+                      }}
                     >
-                        {getTranslation('sub_btn_demo', language)}
-                    </button>
+                      {getTranslation('sub_btn_upgrade', language)}
+                    </Button>
+                    {/* Demo reset removed as requested */}
                  </div>
             </div>
           </div>
@@ -638,18 +697,18 @@ const App: React.FC = () => {
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-6">
-                    <Button 
-                        onClick={() => startNewAnalysis()} 
-                        className="text-sm px-8 py-5 shadow-[0_0_40px_rgba(220,38,38,0.5)] border-red-600 w-full sm:w-64"
+                    <Link
+                        href="/alege-un-film"
+                        className="text-sm px-8 py-5 rounded uppercase tracking-widest font-bold transition-all duration-300 cinema-font bg-red-800 hover:bg-red-700 text-white shadow-[0_0_40px_rgba(220,38,38,0.5)] border border-red-600 text-center w-full sm:w-64"
                     >
-                    {getTranslation('btn_pick_movie', language)}
-                    </Button>
-                    <button 
-                        onClick={() => transitionTo('how-it-works')}
-                        className="px-8 py-5 border border-zinc-700 text-zinc-300 hover:text-white hover:border-white rounded transition-all cinema-font uppercase tracking-widest text-sm w-full sm:w-64"
+                      {getTranslation('btn_pick_movie', language)}
+                    </Link>
+                    <Link 
+                        href="/cum-functioneaza"
+                        className="px-8 py-5 border border-zinc-700 text-zinc-300 hover:text-white hover:border-white rounded transition-all cinema-font uppercase tracking-widest text-sm w-full sm:w-64 text-center"
                     >
                         {getTranslation('btn_how_it_works', language)}
-                    </button>
+                    </Link>
                 </div>
                 </div>
 
@@ -739,7 +798,7 @@ const App: React.FC = () => {
             {/* --- PRICING SECTION --- */}
             <PricingSection 
               lang={language} 
-              onUpgrade={() => user?.isVip ? router.push('/dashboard') : setIsAuthModalOpen(true)} 
+              onUpgrade={handleUpgrade} 
               isVip={!!user?.isVip}
             />
             

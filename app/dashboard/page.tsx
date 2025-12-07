@@ -11,10 +11,21 @@ import { SEARCH_PLATFORMS } from '@/constants';
 const DashboardPage: React.FC = () => {
   const router = useRouter();
   const { user, loading, logout, updateProfile, subscribeVip, refresh, removeWatchlistItem } = useAuth();
+
+  const getInitialLang = (): 'ro' | 'en' => {
+    if (typeof window === 'undefined') return 'ro';
+    const params = new URLSearchParams(window.location.search);
+    const param = params.get('lang');
+    if (param === 'ro' || param === 'en') return param;
+    const stored = window.localStorage.getItem('cefilm_lang');
+    if (stored === 'ro' || stored === 'en') return stored;
+    const nav = navigator.language?.toLowerCase() || '';
+    return nav.startsWith('ro') ? 'ro' : 'en';
+  };
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
-  const [lang, setLang] = useState<'ro' | 'en'>('ro');
+  const [lang, setLang] = useState<'ro' | 'en'>(getInitialLang);
   const [openSynopsis, setOpenSynopsis] = useState<Record<string, boolean>>({});
   const [openReason, setOpenReason] = useState<Record<string, boolean>>({});
   const [openHistory, setOpenHistory] = useState<Record<string, boolean>>({});
@@ -24,10 +35,22 @@ const DashboardPage: React.FC = () => {
   const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/');
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = lang;
     }
-  }, [loading, user, router]);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('cefilm_lang', lang);
+      const url = new URL(window.location.href);
+      url.searchParams.set('lang', lang);
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [lang]);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push(`/?lang=${lang}`);
+    }
+  }, [loading, user, router, lang]);
 
   useEffect(() => {
     setName(user?.name || '');
@@ -39,7 +62,7 @@ const DashboardPage: React.FC = () => {
     const dict: Record<string, { ro: string; en: string }> = {
       account: { ro: 'Contul meu', en: 'My account' },
       dashboard: { ro: 'Dashboard utilizator', en: 'User dashboard' },
-      subtitle: { ro: 'Gestioneaza datele personale, biletele gratuite si upgrade-ul VIP pentru doar €5.', en: 'Manage profile, free tickets and upgrade to VIP for just €5.' },
+      subtitle: { ro: 'Gestioneaza datele personale, biletele gratuite si upgrade-ul VIP pentru doar 25 lei/lună.', en: 'Manage profile, free tickets and upgrade to VIP for just 25 lei/month.' },
       backHome: { ro: 'Înapoi acasă', en: 'Back home' },
       tickets: { ro: 'Bilete', en: 'Tickets' },
       watchlist: { ro: 'Watchlist', en: 'Watchlist' },
@@ -152,7 +175,7 @@ const DashboardPage: React.FC = () => {
       {/* Header (same style as landing) */}
       <header className="relative z-50 bg-gradient-to-b from-black/90 to-transparent border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-6 flex justify-between items-center">
-            <div className="flex flex-col cursor-pointer group" onClick={() => router.push('/')}>
+            <div className="flex flex-col cursor-pointer group" onClick={() => router.push(`/?lang=${lang}`)}>
                 <div className="cinema-font text-xl md:text-3xl font-bold gold-text tracking-widest group-hover:scale-105 transition-transform duration-500">
                 CEFILM?
                 </div>
@@ -172,13 +195,13 @@ const DashboardPage: React.FC = () => {
                 </div>
 
                 <button 
-                    onClick={() => router.push('/?view=category-select')}
+                    onClick={() => router.push(`/?view=category-select&lang=${lang}`)}
                     className="hidden lg:block text-zinc-400 hover:text-white uppercase text-xs tracking-[0.15em] transition-colors font-bold"
                 >
                     {lang === 'ro' ? 'Alege un film' : 'Pick a movie'}
                 </button>
                 <button 
-                    onClick={() => router.push('/?view=how-it-works')}
+                    onClick={() => router.push(`/?view=how-it-works&lang=${lang}`)}
                     className="hidden lg:block text-zinc-400 hover:text-white uppercase text-xs tracking-[0.15em] transition-colors font-bold"
                 >
                     {lang === 'ro' ? 'Cum funcționează' : 'How it works'}
@@ -287,7 +310,7 @@ const DashboardPage: React.FC = () => {
                   disabled={subscribing}
                   className="px-3 py-1 rounded-full text-xs font-bold uppercase bg-orange-600 text-black border border-orange-700 hover:bg-orange-500 transition-colors"
                 >
-                {subscribing ? 'Se proceseaza...' : 'Activeaza VIP (€5)'}
+                {subscribing ? 'Se proceseaza...' : 'UPGRADE VIP (25 lei)'}
                 </button>
               )}
             </div>
@@ -386,7 +409,7 @@ const DashboardPage: React.FC = () => {
                 <Button type="submit" disabled={saving}>{saving ? t('saving') : t('save')}</Button>
                 {!user.isVip && (
                   <Button variant="secondary" type="button" onClick={handleSubscribe} disabled={subscribing}>
-                    {subscribing ? 'Se proceseaza...' : 'Activeaza VIP (€5)'}
+                    {subscribing ? 'Se proceseaza...' : 'UPGRADE VIP (25 lei)'}
                   </Button>
                 )}
               </div>
@@ -619,7 +642,7 @@ const DashboardPage: React.FC = () => {
                 <h2 className="text-2xl font-bold">Functii disponibile dupa upgrade</h2>
               </div>
               <Button onClick={handleSubscribe} disabled={subscribing}>
-                Upgrade VIP (€5)
+                UPGRADE VIP (25 lei)
               </Button>
             </div>
             <div className="grid md:grid-cols-3 gap-4">
@@ -641,7 +664,7 @@ const DashboardPage: React.FC = () => {
         )}
       </div>
       <Footer
-        onNavigate={(v) => (v === 'landing' ? router.push('/') : router.push('/'))}
+        onNavigate={(v) => (v === 'landing' ? router.push(`/?lang=${lang}`) : router.push(`/?lang=${lang}`))}
         lang={lang}
         isVip={!!user.isVip}
         onUpgrade={() => router.push('/dashboard')}

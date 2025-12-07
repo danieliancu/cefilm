@@ -108,7 +108,7 @@ export const translations: TranslationData = {
   plan_free_btn: { ro: 'Plan Actual', en: 'Current Plan' },
   
   plan_vip_name: { ro: 'Director\'s Pass', en: 'Director\'s Pass' },
-  plan_vip_price: { ro: '€5', en: '€5' },
+  plan_vip_price: { ro: '25 lei', en: '25 lei' },
   plan_vip_period: { ro: '/ lună', en: '/ month' },
   plan_vip_btn: { ro: 'Devino VIP', en: 'Become VIP' },
   plan_vip_badge: { ro: 'Cel mai popular', en: 'Best Value' },

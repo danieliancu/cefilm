@@ -19,7 +19,11 @@ const cinzel = Cinzel({
 export const metadata: Metadata = {
   title: "CEFILM? - AI Cinema Adviser",
   description:
-    "O experiență cinematografică personalizată. Răspunde la un quiz despre starea ta, iar AI-ul îți va recomanda filmul perfect analizând psihologia ta."
+    "O experiență cinematografică personalizată. Răspunde la un quiz despre starea ta, iar AI-ul îți va recomanda filmul perfect analizând psihologia ta.",
+
+  icons: {
+    icon: "/favicon.ico"
+  }
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
