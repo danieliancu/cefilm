@@ -13,7 +13,16 @@ interface AuthContextValue {
   refresh: () => Promise<void>;
   updateProfile: (data: { name?: string; avatarUrl?: string; password?: string }) => Promise<boolean>;
   subscribeVip: () => Promise<boolean>;
-  addWatchlistItem: (data: { title: string; imdbId?: string; year?: string; notes?: string; synopsis?: string; reason?: string; director?: string }) => Promise<boolean>;
+  addWatchlistItem: (data: {
+    title: string;
+    originalTitle?: string;
+    imdbId?: string;
+    year?: string;
+    notes?: string;
+    synopsis?: string;
+    reason?: string;
+    director?: string;
+  }) => Promise<boolean>;
   removeWatchlistItem: (id: string) => Promise<boolean>;
   useTicket: () => Promise<boolean>;
   isVip: boolean;
@@ -139,7 +148,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const addWatchlistItem = async (data: { title: string; imdbId?: string; year?: string; notes?: string; synopsis?: string; reason?: string; director?: string }) => {
+  const addWatchlistItem = async (data: {
+    title: string;
+    originalTitle?: string;
+    imdbId?: string;
+    year?: string;
+    notes?: string;
+    synopsis?: string;
+    reason?: string;
+    director?: string;
+  }) => {
     if (!user) return false;
     try {
       const res = await fetch('/api/user/watchlist', {
