@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { loadStripe } from '@stripe/stripe-js';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { Button } from '@/components/Button';
 
-const CheckoutPage: React.FC = () => {
+const CheckoutContent: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading } = useAuth();
@@ -262,6 +262,20 @@ const CheckoutPage: React.FC = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const CheckoutPage: React.FC = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-black text-white flex items-center justify-center">
+          <div className="animate-spin w-10 h-10 border-2 border-red-700 border-t-transparent rounded-full"></div>
+        </div>
+      }
+    >
+      <CheckoutContent />
+    </Suspense>
   );
 };
 
