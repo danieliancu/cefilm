@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-const CheckoutReturnPage: React.FC = () => {
+const CheckoutReturnContent: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const langParam = searchParams.get('lang');
@@ -44,6 +44,20 @@ const CheckoutReturnPage: React.FC = () => {
         </button>
       </div>
     </div>
+  );
+};
+
+const CheckoutReturnPage: React.FC = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-black text-white flex items-center justify-center">
+          <div className="animate-spin w-10 h-10 border-2 border-red-700 border-t-transparent rounded-full"></div>
+        </div>
+      }
+    >
+      <CheckoutReturnContent />
+    </Suspense>
   );
 };
 
