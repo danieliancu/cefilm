@@ -161,32 +161,8 @@ const DashboardPage: React.FC = () => {
   };
 
   const handleSubscribe = async () => {
-    setFormError(null);
     setSubscribing(true);
-    try {
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lang }),
-      });
-      if (res.status === 401) {
-        router.push(`/?lang=${lang}`);
-        return;
-      }
-      if (!res.ok) {
-        setFormError(lang === 'ro' ? 'Nu am putut porni plata.' : 'Could not start checkout.');
-        return;
-      }
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      }
-    } catch {
-      setFormError(lang === 'ro' ? 'Nu am putut porni plata.' : 'Could not start checkout.');
-    } finally {
-      setSubscribing(false);
-    }
+    router.push(`/checkout?lang=${lang}`);
   };
 
   const performDeleteAccount = async () => {
@@ -718,7 +694,7 @@ const DashboardPage: React.FC = () => {
                 <h2 className="text-2xl font-bold">Functii disponibile dupa upgrade</h2>
               </div>
               <Button onClick={handleSubscribe} disabled={subscribing}>
-                UPGRADE VIP (25 lei)
+                {subscribing ? 'Se incarca checkout...' : 'UPGRADE VIP (25 lei)'}
               </Button>
             </div>
             <div className="grid md:grid-cols-3 gap-4">

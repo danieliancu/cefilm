@@ -45,15 +45,14 @@ export async function POST(request: NextRequest) {
   }
 
   const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  const successUrl = `${origin}/dashboard?checkout=success&lang=${langSafe}`;
-  const cancelUrl = `${origin}/?lang=${langSafe}`;
+  const returnUrl = `${origin}/dashboard/checkout-return?session_id={CHECKOUT_SESSION_ID}&lang=${langSafe}`;
 
   const session = await stripe.checkout.sessions.create({
     mode: 'subscription',
     customer: customerId,
     line_items: [{ price: priceId, quantity: 1 }],
-    success_url: successUrl,
-    cancel_url: cancelUrl,
+    ui_mode: 'embedded',
+    return_url: returnUrl,
     metadata: { userId: user.id },
     subscription_data: {
       metadata: { userId: user.id },
@@ -63,5 +62,9 @@ export async function POST(request: NextRequest) {
   // Optional: track last intent
   await query('UPDATE users SET updated_at = NOW() WHERE id = ?', [user.id]);
 
-  return NextResponse.json({ url: session.url });
+  if (!session.client_secret) {
+    return NextResponse.json({ error: 'Nu am putut genera client_secret pentru checkout.' }, { status: 500 });
+  }
+
+  return NextResponse.json({ clientSecret: session.client_secret });
 }
