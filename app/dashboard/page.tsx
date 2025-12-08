@@ -63,10 +63,12 @@ const DashboardPage: React.FC = () => {
   const t = (key: string) => {
     const dict: Record<string, { ro: string; en: string }> = {
       account: { ro: 'Contul meu', en: 'My account' },
-      dashboard: { ro: 'Dashboard utilizator', en: 'User dashboard' },
+      dashboard: { ro: 'Dashboard', en: 'Dashboard' },
       subtitle: { ro: 'Gestioneaza datele personale, biletele gratuite si upgrade-ul VIP pentru doar 25 lei/lună.', en: 'Manage profile, free tickets and upgrade to VIP for just 25 lei/month.' },
       backHome: { ro: 'Înapoi acasă', en: 'Back home' },
       tickets: { ro: 'Bilete', en: 'Tickets' },
+      ticketsLeft: { ro: 'Tichete gratuite rămase', en: 'Free tickets left' },
+      vipAccount: { ro: 'CONT VIP', en: 'VIP ACCOUNT' },
       watchlist: { ro: 'Watchlist', en: 'Watchlist' },
       status: { ro: 'Statut', en: 'Status' },
       standard: { ro: 'STANDARD', en: 'STANDARD' },
@@ -76,35 +78,35 @@ const DashboardPage: React.FC = () => {
       unlimited: { ro: 'Upgrade pentru acces nelimitat si functii sociale.', en: 'Upgrade for unlimited access and social features.' },
       vipStatusDesc: { ro: 'Acces nelimitat si functii sociale.', en: 'Unlimited access and social features.' },
       personalData: { ro: 'Date personale', en: 'Personal data' },
-      updateProfile: { ro: 'Actualizeaza profilul', en: 'Update profile' },
-      displayName: { ro: 'Nume afisat', en: 'Display name' },
-      save: { ro: 'Salveaza', en: 'Save' },
-      saving: { ro: 'Se salveaza...', en: 'Saving...' },
+      updateProfile: { ro: 'Profilul meu', en: 'My Profile' },
+      displayName: { ro: 'Nume afișat', en: 'Display name' },
+      save: { ro: 'Salvează', en: 'Save' },
+      saving: { ro: 'Se salvează...', en: 'Saving...' },
       freeTickets: { ro: 'Bilete gratuite', en: 'Free tickets' },
       remaining: { ro: 'Rămase', en: 'Remaining' },
       addAt: { ro: 'Adăugat', en: 'Added' },
-      inWatchlist: { ro: 'Șterge din watchlist', en: 'Remove from watchlist' },
-      whatYouUnlock: { ro: 'Ce deblochezi cu VIP', en: 'What you unlock with VIP' },
+      inWatchlist: { ro: 'Șterge', en: 'Remove' },
+      whatYouUnlock: { ro: 'Cu VIP ai acces la:', en: 'What you unlock with VIP' },
       featuresAfterUpgrade: { ro: 'Functii disponibile dupa upgrade', en: 'Features available after upgrade' },
       logout: { ro: 'Deconectare', en: 'Logout' },
       deleteAccount: { ro: 'Sterge contul', en: 'Delete account' },
       deleteDesc: {
-        ro: 'Atentie: stergerea contului va elimina toate datele (watchlist, istoric, abonament). Actiune permanenta.',
+        ro: 'Atenție: ștergerea contului va elimina toate datele (watchlist, istoric, abonament). Acțiune ireversibilă.',
         en: 'Warning: deleting your account removes all data (watchlist, history, subscription). This is permanent.'
       },
       deleteConfirm: {
-        ro: 'Sigur vrei sa stergi contul? Actiunea este ireversibila.',
+        ro: 'Sigur vrei să ștergi contul? Acțiunea este ireversibilă.',
         en: 'Are you sure you want to delete your account? This cannot be undone.'
       },
-      deleteCancel: { ro: 'Anuleaza', en: 'Cancel' },
-      deleteConfirmAction: { ro: 'Sterge contul', en: 'Delete account' },
-      toRecommendations: { ro: 'Inapoi la recomandari', en: 'Back to recommendations' },
+      deleteCancel: { ro: 'Anulează', en: 'Cancel' },
+      deleteConfirmAction: { ro: 'Șterge contul', en: 'Delete account' },
+      toRecommendations: { ro: 'Înapoi la recomandări', en: 'Back to recommendations' },
       yourTitles: { ro: 'Titlurile tale', en: 'Your titles' },
       historyTitle: { ro: 'Istoric filme gasite', en: 'Found movies history' },
-      ratingTitle: { ro: 'Rating la filme', en: 'Rate movies' },
-      discussionTitle: { ro: 'Discutii cu altii', en: 'Discuss with others' },
-      vipHistory: { ro: 'Istoric VIP', en: 'VIP history' },
-      historyEmpty: { ro: 'Nu exista inca istoric salvat.', en: 'No history yet.' },
+      ratingTitle: { ro: 'Ratingul filmelor', en: 'Rate movies' },
+      discussionTitle: { ro: 'Discuții', en: 'Discuss with others' },
+      vipHistory: { ro: 'Istoric', en: 'History' },
+      historyEmpty: { ro: 'Nu există încă istoric salvat.', en: 'No history yet.' },
       preferences: { ro: 'Preferinte', en: 'Preferences' },
       answers: { ro: 'Intrebari si raspunsuri', en: 'Questions & answers' },
       viewDetails: { ro: 'Vezi detalii', en: 'View details' },
@@ -221,6 +223,16 @@ const DashboardPage: React.FC = () => {
     },
   ];
 
+  const remainingTickets = user.isVip ? null : user.freeTickets;
+  const ticketLabel = user.isVip ? t('vipAccount') : t('ticketsLeft');
+  const ticketText = user.isVip ? null : typeof remainingTickets === 'number' ? `${remainingTickets}/5` : '...';
+  const ticketColor = user.isVip
+    ? 'text-green-400'
+    : typeof remainingTickets === 'number' && remainingTickets === 0
+    ? 'text-red-500'
+    : 'text-amber-500';
+  const ticketLabelColor = user.isVip ? 'text-green-400' : 'text-amber-500';
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-[#0f0f0f] to-black text-white flex flex-col">
       {/* Header (same style as landing) */}
@@ -235,14 +247,15 @@ const DashboardPage: React.FC = () => {
                 </div>
             </div>
             <nav className="flex items-center gap-2 md:gap-8">
-                <div 
-                    className="flex items-center gap-2 bg-zinc-900 border border-amber-900/50 rounded px-2 md:px-3 py-1 cursor-help"
-                    title="Bilete disponibile azi"
-                >
-                    <span className="text-lg md:text-xl">🎟️</span>
-                    <span className="cinema-font font-bold text-xs md:text-sm text-amber-500">
-                        {user.isVip ? 'VIP' : `${user.freeTickets}/5`}
+                <div className="flex items-center gap-2 bg-zinc-900 border border-amber-900/50 rounded px-2 md:px-3 py-1">
+                    <span className={`text-[10px] md:text-xs uppercase tracking-[0.18em] font-bold whitespace-nowrap ${ticketLabelColor}`}>
+                        {ticketLabel}{ticketText ? ':' : ''}
                     </span>
+                    {ticketText && (
+                        <span className={`cinema-font font-bold text-xs md:text-sm ${ticketColor}`}>
+                            {ticketText}
+                        </span>
+                    )}
                 </div>
 
                 <button 
@@ -351,9 +364,6 @@ const DashboardPage: React.FC = () => {
                 }`}
               >
                 {user.isVip ? t('vipActive') : t('nonVip')}
-              </span>
-              <span className="px-3 py-1 bg-zinc-800 border border-zinc-700 rounded-full text-xs text-amber-400">
-                {t('freeTickets')}: {user.isVip ? '∞' : user.freeTickets}
               </span>
               {!user.isVip && (
                 <button

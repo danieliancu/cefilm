@@ -16,6 +16,8 @@ export const translations: TranslationData = {
   
   // Header / Tickets
   tickets_remaining: { ro: 'Bilete', en: 'Tickets' },
+  tickets_left_label: { ro: 'Tichete gratuite rămase', en: 'Free tickets left' },
+  tickets_vip_label: { ro: 'CONT VIP', en: 'VIP ACCOUNT' },
   tickets_tooltip: { ro: 'Analize disponibile azi', en: 'Analyses available today' },
   
   // Landing
@@ -33,12 +35,12 @@ export const translations: TranslationData = {
 
   // How It Works
   hiw_title: { ro: 'Simplu. Rapid. Personal.', en: 'Simple. Fast. Personal.' },
-  hiw_step1_title: { ro: '01. Faci un Quiz scurt', en: '01. Take a short Quiz' },
+  hiw_step1_title: { ro: '01. Completezi un Quiz scurt', en: '01. Take a short Quiz' },
   hiw_step1_desc: { ro: 'Nu trebuie să cauți prin mii de titluri. Doar selectează un subiect (Stare, Personalitate, etc.) și răspunde la 3 întrebări despre tine.', en: 'No need to browse thousands of titles. Just select a topic (Mood, Personality, etc.) and answer 3 questions about yourself.' },
-  hiw_step2_title: { ro: '02. Noi Analizăm', en: '02. We Analyze' },
+  hiw_step2_title: { ro: '02. Analizăm rezultatul', en: '02. We Analyze' },
   hiw_step2_desc: { ro: 'Adviser-ul AI nu caută doar "comedii" sau "drame". El înțelege emoția ta și caută filmul care se potrivește psihologic cu momentul tău.', en: 'The AI Adviser doesn\'t just look for "comedies" or "dramas". It understands your emotion and finds the movie that psychologically fits your moment.' },
-  hiw_step3_title: { ro: '03. Primești Filmul', en: '03. Get the Movie' },
-  hiw_step3_desc: { ro: 'Îți spunem clar: "Uită-te la asta!". Primești filmul ideal, motivul pentru care ți se potrivește și 3 alternative similare.', en: 'We tell you clearly: "Watch this!". You get the ideal movie, the reason why it fits you, and 3 similar alternatives.' },
+  hiw_step3_title: { ro: '03. Afli ce film ți se potrivește', en: '03. Get the Movie' },
+  hiw_step3_desc: { ro: 'Primești filmul ideal și explicăm motivul pentru care ți se potrivește și 3 alternative similare.', en: 'We tell you clearly: "Watch this!". You get the ideal movie, the reason why it fits you, and 3 similar alternatives.' },
   hiw_note_title: { ro: 'De ce CEFILM??', en: 'Why CEFILM??' },
   hiw_note_desc: { ro: 'Algoritmii Netflix vor să te țină în aplicație. Noi vrem să te uiți la un film bun. Eliminăm orele pierdute dând scroll și îți oferim calitate, nu cantitate.', en: 'Netflix algorithms want to keep you in the app. We want you to watch a good movie. We eliminate the hours wasted scrolling and offer you quality, not quantity.' },
   hiw_back: { ro: 'Înapoi la meniu', en: 'Back to menu' },
@@ -49,7 +51,7 @@ export const translations: TranslationData = {
   category_subtitle: { ro: 'Alege categoria care descrie cel mai bine situația ta actuală.', en: 'Choose the category that best describes your current situation.' },
   
   // Genre Filters
-  genre_label: { ro: 'Ai preferințe? (Opțional)', en: 'Any preferences? (Optional)' },
+  genre_label: { ro: 'Preferi un anumit gen? (Opțional)', en: 'Any preferences? (Optional)' },
   genre_any: { ro: 'Mă uit la orice', en: 'I watch anything' },
   genre_drama: { ro: 'Dramă', en: 'Drama' },
   genre_comedy: { ro: 'Comedie', en: 'Comedy' },
@@ -94,10 +96,10 @@ export const translations: TranslationData = {
   share_copied: { ro: 'Link copiat în clipboard!', en: 'Link copied to clipboard!' },
 
   // Footer
-  footer_powered: { ro: 'Powered by Gemini 2.5', en: 'Powered by Gemini 2.5' },
+  footer_powered: { ro: 'Powered by AI', en: 'Powered by AI' },
   footer_rights: { ro: 'CEFILM? Studio', en: 'CEFILM? Studio' },
   footer_quote: { ro: '"Filmul este viața la care s-au scos părțile plictisitoare." – Alfred Hitchcock', en: '"Drama is life with the dull bits cut out." – Alfred Hitchcock' },
-  footer_buy_tickets: { ro: 'Devino VIP', en: 'Become VIP' },
+  footer_buy_tickets: { ro: 'Încearcă VIP', en: 'Become VIP' },
 
   // Pricing Section
   pricing_title: { ro: 'Casa de Bilete', en: 'Box Office' },
@@ -137,9 +139,9 @@ export const translations: TranslationData = {
   auth_link_signin: { ro: 'Intră în cont', en: 'Sign In' },
 
   // Subscription Modal (Updated)
-  sub_title: { ro: 'Casa de Bilete e Închisă', en: 'Box Office Closed' },
+  sub_title: { ro: 'Casa de Bilete e închisă', en: 'Box Office Closed' },
   sub_desc: { ro: 'Ai epuizat cele 5 bilete gratuite. Poți deveni membru VIP și ai acces nelimitat la bilete.', en: 'You’ve used all 5 free tickets. Become a VIP member for unlimited tickets.' },
-  sub_btn_upgrade: { ro: 'Ia Abonament Nelimitat', en: 'Get Unlimited Pass' },
+  sub_btn_upgrade: { ro: 'Încearcă abonamentul nelimitat', en: 'Get Unlimited Pass' },
   sub_btn_demo: { ro: '[Demo] Resetează Bilete', en: '[Demo] Reset Tickets' }
 };
 

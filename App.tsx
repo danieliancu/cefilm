@@ -406,7 +406,8 @@ const App: React.FC<AppProps> = ({ initialState = 'landing' }) => {
   );
 
   const availableTickets = user?.isVip ? Number.POSITIVE_INFINITY : user ? user.freeTickets : dailyTickets;
-  const ticketText = user?.isVip ? 'VIP' : availableTickets == null ? '...' : `${availableTickets}/5`;
+  const ticketLabel = user?.isVip ? getTranslation('tickets_vip_label', language) : getTranslation('tickets_left_label', language);
+  const ticketText = user?.isVip ? null : availableTickets == null ? '...' : `${availableTickets}/5`;
   const ticketColor = user?.isVip
     ? 'text-green-400'
     : availableTickets == null
@@ -414,6 +415,7 @@ const App: React.FC<AppProps> = ({ initialState = 'landing' }) => {
     : availableTickets === 0
     ? 'text-red-500'
     : 'text-amber-500';
+  const ticketLabelColor = user?.isVip ? 'text-green-400' : 'text-amber-500';
 
   const startCheckout = async () => {
     if (!user) {
@@ -483,17 +485,6 @@ const App: React.FC<AppProps> = ({ initialState = 'landing' }) => {
             {/* Menu Right */}
             <nav className="flex items-center gap-2 md:gap-8">
                 
-                {/* TICKET COUNTER (Monetization UI) */}
-                <div 
-                    className="flex items-center gap-2 bg-zinc-900 border border-amber-900/50 rounded px-2 md:px-3 py-1 cursor-help"
-                    title={getTranslation('tickets_tooltip', language)}
-                >
-                    <span className="text-lg md:text-xl">🎟️</span>
-                    <span className={`cinema-font font-bold text-xs md:text-sm ${ticketColor}`}>
-                        {ticketText}
-                    </span>
-                </div>
-
                 <Link 
                     href="/alege-un-film"
                     className="hidden lg:block text-zinc-400 hover:text-white uppercase text-xs tracking-[0.15em] transition-colors font-bold"
@@ -707,9 +698,16 @@ const App: React.FC<AppProps> = ({ initialState = 'landing' }) => {
                 {/* Left Column: Text */}
                 <div className="space-y-8 text-center lg:text-left order-2 lg:order-1">
                 
-                {/* Mobile-Only Badge */}
-                <div className="md:hidden inline-block border border-amber-600/30 bg-amber-900/10 px-4 py-1 rounded-full text-amber-500 text-xs font-bold tracking-widest uppercase mb-4">
-                    {getTranslation('landing_now_showing', language)}
+                {/* Ticket info badge - visible on all viewports */}
+                <div className="inline-block border border-amber-600/30 bg-amber-900/10 px-4 py-1 rounded-full text-xs font-bold tracking-widest uppercase mb-4 whitespace-nowrap">
+                    <span className={ticketLabelColor}>
+                      {ticketLabel}{ticketText ? ':' : ''}
+                    </span>
+                    {ticketText && (
+                      <span className={`ml-1 cinema-font ${ticketColor}`}>
+                        {ticketText}
+                      </span>
+                    )}
                 </div>
                 
                 {/* UPDATED TITLE STRUCTURE - Single Key, Pre-Line whitespace */}
